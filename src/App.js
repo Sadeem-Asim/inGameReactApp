@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 // import logo from './logo.svg';
 import { useState, useEffect } from 'react';
 import './App.css';
@@ -39,17 +40,21 @@ const Types = {
   [TypeName]: [
     { name: '_sender', type: 'address' },
     { name: '_claimId', type: 'uint256' },
-    { name: '_amount', type: 'uint256' },
+    { name: '_reward', type: 'uint256' },
+    { name: '_cost', type: 'uint256' },
     { name: '_sigTime', type: 'uint256' },
   ],
 };
 // change this url
-const BASE_URL = 'https://ingameapi77.herokuapp.com/'
+const BASE_URL = 'https://players-dragon.herokuapp.com/api/v1/claimReward/'
 
 function App() {
   // const chainId = 80001;
-  const _verifyingContract = '0x82e95174F2Ac92A4969F8957C36992ec88007E16';
+
+  const _verifyingContract = '0xb12F56320009EE202a50A49abE4B2f2C26058356';
   const [whitelistData, setWhitelistData] = useState([]);
+  const [update, setUpdate] = useState();
+
   const [checked, setChecked] = useState(false);
   const handleClick = () => setChecked(!checked);
   // const _amount = 2
@@ -57,15 +62,23 @@ function App() {
 
   useEffect(() => {
     fetch();
-  }, [checked]);
+  }, [checked,update]);
   const fetch = () => {
     //todo integrate with apis
-    axios.get(BASE_URL + 'records'
+    let url;
+    if(checked){
+      url = BASE_URL + 'getWithoutSig';
+    }else{
+      url = BASE_URL + 'get';
+    }
+
+    axios.get(url
 ).then((response, ) => {
-      setWhitelistData(response.data)
+  console.log(response);
+      setWhitelistData(response.data.claimIds)
     })
   };
-  const click = (_claimId,_sender, _amount, _sigTime) => {
+  const click = (_claimId,_sender, _reward, _cost, _sigTime) => {
     window.ethereum.request({ method: 'eth_requestAccounts' }).then((res) => {
       // Return the address of the wallet
       const createTypeData = function (domainData, primaryType, message, types) {
@@ -82,16 +95,16 @@ function App() {
           };
         };
 
-      const chainId  = window.ethereum.networkVersion
+      const chainId  = window.ethereum.networkVersion;
       console.log('chain id:', chainId);
-      // console.log(chainId, _sender, _amount, _sigTime);
+      console.log(chainId, _sender, _reward, _cost, _sigTime);
       const data = createTypeData(
         { name: TypeName, version: TypeVersion, chainId: chainId, verifyingContract: _verifyingContract },
         TypeName,
-        { _sender, _claimId, _amount, _sigTime },
+        { _sender, _claimId, _reward, _cost, _sigTime },
         Types
       );
-
+console.log("Hi");
       window.ethereum
         .request({
           jsonrpc: '2.0',
@@ -100,19 +113,33 @@ function App() {
           id: new Date().getTime(),
         })
         .then((sig) => {
-
           console.log('signature', sig);
-          console.log('_amount', _amount);
-          const params = {user:_sender,amount: _amount, sigTime:_sigTime,sig: sig}
-          axios.put(BASE_URL + 'records/' + _claimId,  params
+          console.log('_amount', _reward);
+          const params = {user:_sender, reward:_reward, cost:_cost, sigTime:_sigTime,sig: sig}
+          console.log(params);
+          const updateUrl = BASE_URL + 'updateSig/' + _claimId;
+          console.log(updateUrl)
+          const signature = params.sig;
+          const options = {
+            url: updateUrl,
+            method: 'PUT',
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json;charset=UTF-8'
+            },
+            data: {
+              signature:signature
+            }
+          };
+          axios(options
           ).then(response => {
             alert("Signature generated successfully")
+            setUpdate(n => n+1);
             console.log(response)
           }).catch((err) => {
             console.log(err)
           })
-          // console.log(res)
-        });
+        }).catch(err =>console.log);
     });
   };
 
@@ -140,24 +167,25 @@ function App() {
             <MDBTable striped>
               <MDBTableHead>
                 <tr>
-                  <th scope="col">address</th>
-                  <th scope="col">Amount</th>
-                  <th scope="col">sigTime</th>
-                  <th scope="col">signature</th>
+                  <th scope="col">Address</th>
+                  <th scope="col">Reward</th>
+                  <th scope="col">Cost</th>
+                  <th scope="col">Sig Time</th>
+                  <th scope="col">Signature</th>
                 </tr>
               </MDBTableHead>
               <MDBTableBody>
-                {whitelistData.map((item) => (
+                {whitelistData.map((item , i) => (
                   <tr
-                    key={item.id}
-                    style={{ display: checked ? (item.sig === '' ? 'block' : 'none') : 'block' }}
+                    key={i}
                   >
-                    <td>{item.user}</td>
-                    <td>{item.amount}</td>
+                    <td>{item.address}</td>
+                    <td>{item.reward}</td>
+                    <td>{item.cost}</td>
                     <td>{item.sigTime}</td>
-                    {item.sig === '' || item.sig === undefined ? (
+                    {item.signature === '' || item.signature === undefined ? (
                       <td>
-                        <MDBBtn onClick={() => click(item.id, item.user, item.amount, item.sigTime)}>Sign in</MDBBtn>
+                        <MDBBtn onClick={() => click(item.claimId, item.address, item.reward,  item.cost, item.sigTime)}>Sign in</MDBBtn>
                       </td>
                     ) : (
                       <td>Already generated</td>

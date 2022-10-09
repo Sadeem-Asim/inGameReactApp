@@ -167,6 +167,7 @@ console.log("Hi");
             <MDBTable striped>
               <MDBTableHead>
                 <tr>
+                  <th scope="col">Claim Id</th>
                   <th scope="col">Address</th>
                   <th scope="col">Reward</th>
                   <th scope="col">Cost</th>
@@ -179,6 +180,7 @@ console.log("Hi");
                   <tr
                     key={i}
                   >
+                    <td>{item.claimId}</td>
                     <td>{item.address}</td>
                     <td>{item.reward}</td>
                     <td>{item.cost}</td>

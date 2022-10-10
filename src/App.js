@@ -67,9 +67,9 @@ function App() {
     //todo integrate with apis
     let url;
     if(checked){
-      url = BASE_URL + 'getWithoutSig';
-    }else{
       url = BASE_URL + 'get';
+    }else{
+      url = BASE_URL + 'getWithoutSig';
     }
 
     axios.get(url
@@ -155,7 +155,7 @@ console.log("Hi");
               name="flexCheck"
               value=""
               id="flexCheckDefault"
-              label="Show only sign in"
+              label="Show All"
             />
           </MDBCol>
           <MDBCol size="md"></MDBCol>

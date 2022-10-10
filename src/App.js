@@ -133,7 +133,6 @@ console.log("Hi");
           };
           axios(options
           ).then(response => {
-            alert("Signature generated successfully")
             setUpdate(n => n+1);
             console.log(response)
           }).catch((err) => {

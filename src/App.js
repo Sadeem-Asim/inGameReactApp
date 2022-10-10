@@ -51,7 +51,7 @@ const BASE_URL = 'https://players-dragon.herokuapp.com/api/v1/claimReward/'
 function App() {
   // const chainId = 80001;
 
-  const _verifyingContract = '0xb12F56320009EE202a50A49abE4B2f2C26058356';
+  const _verifyingContract = '0xFE8482cbFcEeE21853E67ca44705d13fc0964F60';
   const [whitelistData, setWhitelistData] = useState([]);
   const [update, setUpdate] = useState();
 
